@@ -1,0 +1,105 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "spb"
+version = "0.1.0" # Initial development version
+description = "Smart Project Backup: Incremental backups based on content hashing."
+authors = ["mmaitland300 <mmaitland300@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/mmaitland300/DAWBackup"
+repository = "https://github.com/mmaitland300/DAWBackup"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha", # Initial status
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: System :: Archiving :: Backup",
+    "Topic :: Utilities",
+]
+packages = [{ include = "spb" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+watchdog = "^4.0.0" # For file system monitoring
+click = "^8.1.7"    # For CLI interface
+toml = "^0.10.2"    # For reading config files (will be needed later)
+appdirs = "^1.4.4"  # For platform-specific user directories (config/logs)
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+pytest-cov = "^5.0.0"
+ruff = "^0.4.4"     # Linter & Formatter
+mypy = "^1.9.0"
+pre-commit = "^3.7.0"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.18"
+pyinstaller = { version = "6.6.0", python = ">=3.11,<3.13" }
+types-toml = "^0.10.8.20240310" # Type hints for toml
+
+# [tool.poetry.scripts] # Will be added in Phase 4
+# spb = "spb.cli.main:cli"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["ALL"] # Select all rules initially, can be pruned later if needed
+ignore = [
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D107",   # Missing docstring in __init__
+    "D203",   # Incompatible with D211 (no-blank-line-before-class) - FIXED!
+    "ANN101", # Missing type annotation for self
+    "ANN102", # Missing type annotation for cls
+    "TD002",  # Missing author in TODOs
+    "TD003",  # Missing issue link in TODOs
+    "FIX002", # Line contains TODO
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"] # Allow unused imports in __init__.py
+"tests/*" = [
+    "S101",   # Allow assert statements in tests
+    "D103",   # Missing docstring in public function (allow in tests)
+    "SLF001", # Allow access to private members in tests
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true # Be strict later, but allow missing stubs for now
+strict = true # Enforce strict mode as required
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --cov=spb --cov-report=term-missing --cov-fail-under=1" # Start with 1% coverage requirement, will increase
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning", # Ignore general deprecation warnings during tests for now
+]
+
+[tool.coverage.run]
+omit = [
+    "*/__main__.py",
+    "*/constants.py", # Often just assignments
+    "spb/cli/*",      # Exclude CLI for coverage until implemented
+    "tests/*",
+    ".venv/*"
+]
+
+[tool.coverage.report]
+fail_under = 1 # Start low, increase per phase requirement (target >= 90)
+show_missing = true

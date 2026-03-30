@@ -55,8 +55,11 @@ ignore = [
     "D104",   # Missing docstring in public package
     "D107",   # Missing docstring in __init__
     "D203",   # Incompatible with D211 (no-blank-line-before-class) - FIXED!
+    "D213",   # Disabled to avoid the D212/D213 incompatibility warning
     "ANN101", # Missing type annotation for self
     "ANN102", # Missing type annotation for cls
+    "COM812", # Disabled to avoid formatter conflicts
+    "ISC001", # Disabled to avoid formatter conflicts
     "PLR0912", # Branch limits are noisy for filesystem classification helpers
     "PLR0915", # Statement limits are noisy for orchestration code
     "TRY003",  # Verbose dynamic messages are fine for CLI-facing errors
@@ -74,6 +77,8 @@ ignore = [
     "D103",   # Missing docstring in public function (allow in tests)
     "PLR2004", # Literal values are fine in direct assertions
     "PT009",  # unittest assertions are intentional here
+    "PT027",  # unittest-style raises are intentional here
+    "S108",   # tmp paths in tests are controlled TemporaryDirectory use
     "SLF001", # Allow access to private members in tests
 ]
 

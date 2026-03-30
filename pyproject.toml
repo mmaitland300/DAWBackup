@@ -41,12 +41,14 @@ mkdocs-material = "^9.5.18"
 pyinstaller = { version = "6.6.0", python = ">=3.11,<3.13" }
 types-toml = "^0.10.8.20240310" # Type hints for toml
 
-# [tool.poetry.scripts] # Will be added in Phase 4
-# spb = "spb.cli.main:cli"
+[tool.poetry.scripts]
+spb = "spb.cli.main:cli"
 
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+[tool.ruff.lint]
 select = ["ALL"] # Select all rules initially, can be pruned later if needed
 ignore = [
     "D100",   # Missing docstring in public module
@@ -55,6 +57,9 @@ ignore = [
     "D203",   # Incompatible with D211 (no-blank-line-before-class) - FIXED!
     "ANN101", # Missing type annotation for self
     "ANN102", # Missing type annotation for cls
+    "PLR0912", # Branch limits are noisy for filesystem classification helpers
+    "PLR0915", # Statement limits are noisy for orchestration code
+    "TRY003",  # Verbose dynamic messages are fine for CLI-facing errors
     "TD002",  # Missing author in TODOs
     "TD003",  # Missing issue link in TODOs
     "FIX002", # Line contains TODO
@@ -64,7 +69,11 @@ ignore = [
 "__init__.py" = ["F401"] # Allow unused imports in __init__.py
 "tests/*" = [
     "S101",   # Allow assert statements in tests
+    "D101",   # Missing docstring in public class (allow in tests)
+    "D102",   # Missing docstring in public method (allow in tests)
     "D103",   # Missing docstring in public function (allow in tests)
+    "PLR2004", # Literal values are fine in direct assertions
+    "PT009",  # unittest assertions are intentional here
     "SLF001", # Allow access to private members in tests
 ]
 
@@ -95,7 +104,6 @@ filterwarnings = [
 omit = [
     "*/__main__.py",
     "*/constants.py", # Often just assignments
-    "spb/cli/*",      # Exclude CLI for coverage until implemented
     "tests/*",
     ".venv/*"
 ]

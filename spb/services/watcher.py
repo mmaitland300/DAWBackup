@@ -78,6 +78,7 @@ class WatchCoordinator:
         self._state = threading.Lock()
         self._running = False
         self._rerun_wanted = False
+        self._backup_worker: threading.Thread | None = None
         factory = timer_factory or _default_timer_factory
         self._debouncer = Debouncer(
             debounce_seconds,
@@ -93,12 +94,14 @@ class WatchCoordinator:
         """Cancel a scheduled backup timer (e.g. on shutdown)."""
         self._debouncer.cancel()
 
-    def _on_debounce_fire(self) -> None:
+    def join_in_flight_backup(self, timeout: float | None = None) -> None:
+        """Block until the current ``run_backup`` worker finishes, if any."""
         with self._state:
-            if self._running:
-                self._rerun_wanted = True
-                return
-            self._running = True
+            worker = self._backup_worker
+        if worker is not None and worker.is_alive():
+            worker.join(timeout=timeout)
+
+    def _run_backup_on_worker(self) -> None:
         try:
             result = run_backup(source=self._source, destination=self._destination)
             self._on_backup_result(result)
@@ -107,8 +110,23 @@ class WatchCoordinator:
                 self._running = False
                 need_rerun = self._rerun_wanted
                 self._rerun_wanted = False
+                self._backup_worker = None
             if need_rerun:
                 self._debouncer.ping()
+
+    def _on_debounce_fire(self) -> None:
+        with self._state:
+            if self._running:
+                self._rerun_wanted = True
+                return
+            self._running = True
+            worker = threading.Thread(
+                target=self._run_backup_on_worker,
+                name="spb-backup",
+                daemon=False,
+            )
+            self._backup_worker = worker
+        worker.start()
 
 
 _RESERVED_TOP_LEVEL = METADATA_DIR_RELATIVE.name
@@ -173,8 +191,9 @@ def run_watch(
 ) -> None:
     """Watch ``source`` recursively and run debounced incremental backups.
 
-    Blocks until SIGINT or SIGTERM, then stops the observer and cancels any
-    pending debounced run.
+    Blocks until SIGINT or SIGTERM. Shutdown stops the observer, cancels any
+    scheduled debounce timer, then waits for an in-flight ``run_backup`` (if
+    any) to finish before returning.
 
     ``poll_interval`` is only the sleep granularity while waiting for shutdown;
     the ``watchdog`` observer uses OS-specific APIs for change notification.
@@ -203,6 +222,7 @@ def run_watch(
         while not stop_event.wait(timeout=poll_interval):
             pass
     finally:
-        coordinator.cancel_pending_backup()
         observer.stop()
         observer.join(timeout=10.0)
+        coordinator.cancel_pending_backup()
+        coordinator.join_in_flight_backup()

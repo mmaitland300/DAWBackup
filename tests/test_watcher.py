@@ -105,6 +105,7 @@ class WatchCoordinatorTests(unittest.TestCase):
                 timer_factory=_fake_timer_factory,
             )
             coordinator._on_debounce_fire()
+            coordinator.join_in_flight_backup(timeout=5.0)
 
         self.assertEqual(len(received), 1)
 
@@ -139,12 +140,58 @@ class WatchCoordinatorRerunTests(unittest.TestCase):
                 on_backup_result=received.append,
                 timer_factory=short_timer,
             )
-            worker = threading.Thread(target=coordinator._on_debounce_fire)
-            worker.start()
+            coordinator._on_debounce_fire()
             assert entered_backup.wait(timeout=5.0)
             coordinator._on_debounce_fire()
             exit_backup.set()
-            worker.join(timeout=5.0)
+            coordinator.join_in_flight_backup(timeout=5.0)
+            coordinator.cancel_pending_backup()
 
         self.assertEqual(len(received), 1)
         self.assertGreaterEqual(len(_RecordingTimer.instances), 1)
+
+
+class WatchCoordinatorShutdownTests(unittest.TestCase):
+    """Shutdown waits for the active backup worker (simulated interrupt path)."""
+
+    def test_join_in_flight_blocks_until_backup_finishes(self) -> None:
+        entered = threading.Event()
+        release = threading.Event()
+        completed = threading.Event()
+        join_done = threading.Event()
+        joiner_started = threading.Event()
+
+        def fake_run_backup(**_kwargs: object) -> BackupResult:
+            entered.set()
+            assert release.wait(timeout=5.0)
+            completed.set()
+            return _empty_result()
+
+        def run_join(c: WatchCoordinator) -> None:
+            joiner_started.set()
+            c.join_in_flight_backup()
+            join_done.set()
+
+        with patch(
+            "spb.services.watcher.run_backup",
+            side_effect=fake_run_backup,
+        ):
+            coordinator = WatchCoordinator(
+                source=Path("/tmp/spb-src"),
+                destination=Path("/tmp/spb-dest"),
+                debounce_seconds=0.5,
+                on_backup_result=lambda _r: None,
+                timer_factory=_fake_timer_factory,
+            )
+            coordinator._on_debounce_fire()
+            assert entered.wait(timeout=5.0)
+            threading.Thread(
+                target=run_join,
+                args=(coordinator,),
+                daemon=True,
+            ).start()
+            assert joiner_started.wait(timeout=5.0)
+            self.assertFalse(join_done.wait(timeout=0.25))
+            release.set()
+            assert join_done.wait(timeout=5.0)
+            assert completed.is_set()

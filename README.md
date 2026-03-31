@@ -57,7 +57,7 @@ Optional debounce interval (seconds of filesystem quiet before running a backup)
 spb watch --debounce 2
 ```
 
-Press Ctrl+C to stop watching; the process exits cleanly (pending debounced runs are cancelled; already running backups are allowed to finish).
+Press Ctrl+C to stop watching; the process stops the filesystem observer, cancels any scheduled debounce timer, then waits for an in-flight backup to finish before exiting.
 
 `spb backup` accepts **either zero arguments** (use configured `default_source` and `default_dest`) **or exactly two** paths. One argument is always an error. **`spb watch` does not take path arguments**; it always uses the configured defaults, like zero-argument `spb backup`.
 

@@ -7,7 +7,7 @@ import threading
 import unittest
 from pathlib import Path
 from typing import ClassVar
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from spb.core.backup import BackupResult
 from spb.core.shared import BackupSummary
@@ -15,6 +15,7 @@ from spb.services.watcher import (
     Debouncer,
     WatchCoordinator,
     _event_path_triggers_backup,
+    run_watch,
 )
 
 
@@ -195,3 +196,114 @@ class WatchCoordinatorShutdownTests(unittest.TestCase):
             release.set()
             assert join_done.wait(timeout=5.0)
             assert completed.is_set()
+
+    def test_join_in_flight_emits_info_when_backup_running(self) -> None:
+        started = threading.Event()
+        release_backup = threading.Event()
+
+        def slow_backup(**_kwargs: object) -> BackupResult:
+            started.set()
+            release_backup.wait(timeout=5.0)
+            return _empty_result()
+
+        with patch(
+            "spb.services.watcher.run_backup",
+            side_effect=slow_backup,
+        ):
+            coordinator = WatchCoordinator(
+                source=Path("/tmp/spb-src"),
+                destination=Path("/tmp/spb-dest"),
+                debounce_seconds=0.01,
+                on_backup_result=lambda _r: None,
+                timer_factory=_fake_timer_factory,
+            )
+            coordinator._on_debounce_fire()
+            assert started.wait(timeout=5.0)
+            threading.Timer(0.15, release_backup.set).start()
+            with self.assertLogs("spb.services.watcher", level="INFO") as cm:
+                coordinator.join_in_flight_backup(timeout=5.0)
+
+        self.assertTrue(
+            any("in-flight backup" in line for line in cm.output),
+            msg=str(cm.output),
+        )
+
+
+class RunWatchShutdownIntegrationTests(unittest.TestCase):
+    """Integration: :func:`run_watch` shutdown order with a stub observer."""
+
+    def test_run_watch_shutdown_calls_observer_then_coordinator_cleanup(self) -> None:
+        shutdown_steps: list[str] = []
+        stop_events: list[threading.Event] = []
+
+        def record_stop_event(ev: threading.Event) -> None:
+            stop_events.append(ev)
+
+        observer_instance = MagicMock()
+        observer_instance.stop.side_effect = lambda: shutdown_steps.append(
+            "observer.stop",
+        )
+        observer_instance.join.side_effect = lambda *_a, **_kw: shutdown_steps.append(
+            "observer.join",
+        )
+
+        class TrackingCoordinator(WatchCoordinator):
+            def cancel_pending_backup(self) -> None:
+                shutdown_steps.append("cancel_pending")
+                super().cancel_pending_backup()
+
+            def join_in_flight_backup(self, timeout: float | None = None) -> None:
+                shutdown_steps.append("join_in_flight")
+                super().join_in_flight_backup(timeout)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "src"
+            dst = Path(tmp) / "dst"
+            src.mkdir()
+            dst.mkdir()
+            watch_ready = threading.Event()
+
+            def on_info(_msg: str) -> None:
+                watch_ready.set()
+
+            def run_body() -> None:
+                run_watch(
+                    source=src,
+                    destination=dst,
+                    debounce_seconds=60.0,
+                    on_backup_result=lambda _r: None,
+                    on_info=on_info,
+                    poll_interval=0.05,
+                )
+
+            with (
+                patch(
+                    "spb.services.watcher._install_signal_handlers",
+                    side_effect=record_stop_event,
+                ),
+                patch(
+                    "spb.services.watcher.Observer",
+                    return_value=observer_instance,
+                ),
+                patch(
+                    "spb.services.watcher.WatchCoordinator",
+                    TrackingCoordinator,
+                ),
+            ):
+                watch_thread = threading.Thread(target=run_body)
+                watch_thread.start()
+                self.assertTrue(watch_ready.wait(timeout=5.0))
+                self.assertEqual(len(stop_events), 1)
+                stop_events[0].set()
+                watch_thread.join(timeout=5.0)
+                self.assertFalse(watch_thread.is_alive())
+
+        self.assertEqual(
+            shutdown_steps,
+            [
+                "observer.stop",
+                "observer.join",
+                "cancel_pending",
+                "join_in_flight",
+            ],
+        )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import logging
 import signal
 import threading
 from collections.abc import Callable
@@ -13,6 +14,8 @@ from watchdog.observers import Observer
 
 from spb.constants import METADATA_DIR_RELATIVE
 from spb.core.backup import BackupResult, run_backup
+
+_LOGGER = logging.getLogger(__name__)
 
 TimerFactory = Callable[[float, Callable[[], None]], threading.Timer]
 
@@ -99,6 +102,7 @@ class WatchCoordinator:
         with self._state:
             worker = self._backup_worker
         if worker is not None and worker.is_alive():
+            _LOGGER.info("Shutdown: waiting for in-flight backup to finish.")
             worker.join(timeout=timeout)
 
     def _run_backup_on_worker(self) -> None:

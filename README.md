@@ -6,6 +6,8 @@
 
 A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. **`spb watch`** runs incremental backups when the configured source tree changes, with debouncing for bursty editors (for example DAW saves).
 
+**Milestone 3 is complete** (backup, config, watch). Release notes: [CHANGELOG.md](CHANGELOG.md).
+
 ## Current Features
 
 * **Manual backup CLI:** `spb backup <source> <dest>` or `spb backup` after configuring defaults.
@@ -57,9 +59,22 @@ Optional debounce interval (seconds of filesystem quiet before running a backup)
 spb watch --debounce 2
 ```
 
-Press Ctrl+C to stop watching; the process stops the filesystem observer, cancels any scheduled debounce timer, then waits for an in-flight backup to finish before exiting. If a backup is still running, SPB logs an INFO message (``Shutdown: waiting for in-flight backup to finish.``); enable INFO on the ``spb.services.watcher`` logger (for example ``logging.basicConfig(level=logging.INFO)``) to see it when exit is delayed.
+Press **Ctrl+C** to stop watching. Shutdown order: stop the filesystem observer, join its thread, cancel any scheduled debounce timer, then wait for an in-flight backup to finish before the process exits.
+
+If exit is delayed because a backup is still running, SPB logs at **INFO** on logger ``spb.services.watcher``: ``Shutdown: waiting for in-flight backup to finish.`` Enable INFO for that logger (for example ``logging.basicConfig(level=logging.INFO)``) to see that line on stderr.
 
 `spb backup` accepts **either zero arguments** (use configured `default_source` and `default_dest`) **or exactly two** paths. One argument is always an error. **`spb watch` does not take path arguments**; it always uses the configured defaults, like zero-argument `spb backup`.
+
+### Exit codes, stderr, and watch failure behavior
+
+| Command | Exit 0 | Exit non-zero |
+|---------|--------|----------------|
+| `spb backup` | Completed run (warnings allowed) | Any per-file **Error:** line from the engine (exit 1) |
+| `spb watch` | Normal interrupt after shutdown drain | Missing/invalid config or bad `--debounce` (same rules as zero-arg backup); `ValueError` from path checks around `run_watch` |
+| `spb status` | Config file missing or valid | Invalid `config.toml`, or `SPB_CONFIG_DIR` exists but is not a directory |
+| `spb configure` | Config written | Invalid arguments, merge/validation failure, or unusable config directory |
+
+Warnings and errors from each backup run go to **stderr** with prefixes **`Warning:`** and **`Error:`**; the summary line goes to **stdout**. In **watch** mode, per-run **Error:** lines do not stop the process; only `spb backup` treats engine errors as a failed command. Fix the underlying path or permission issue and the next debounced run will retry.
 
 Example with explicit paths:
 
@@ -105,11 +120,17 @@ Unknown keys in `config.toml` are **ignored** when reading.
 
 ## Roadmap
 
+Next focus is **Milestone 4 (operational hardening)**, for example exclude patterns, clearer last-run status, optional initial sync on `spb watch` start, observer error handling, and stricter tests/coverage.
+
+Longer term:
+
 * Performance optimizations for large project trees
 * Richer packaging and release automation
-* Possible follow-ons: multiple watch roots, path arguments for watch, service/daemon packaging
+* Multiple watch roots, path arguments for `spb watch`, service/daemon packaging
 
 ## Contributing
+
+Release history: [CHANGELOG.md](CHANGELOG.md).
 
 ```bash
 poetry install

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "spb"
-version = "0.1.0" # Initial development version
+version = "0.2.0" # Milestone 3 (watch) complete
 description = "Smart Project Backup: Incremental backups based on content hashing."
 authors = ["mmaitland300 <mmaitland300@gmail.com>"]
 license = "MIT"

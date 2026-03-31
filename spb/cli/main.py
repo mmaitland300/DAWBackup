@@ -108,7 +108,7 @@ def backup_command(paths: tuple[Path, ...]) -> None:
 def watch_command(debounce: float) -> None:
     """Watch the configured source tree and run debounced incremental backups."""
     if debounce <= 0:
-        msg = "--debounce must be greater than zero."
+        msg = "`--debounce` must be a positive number."
         raise click.UsageError(msg)
 
     source, destination = _resolve_paths_for_zero_arg_backup()
@@ -144,7 +144,7 @@ def watch_command(debounce: float) -> None:
 def configure_command(source: Path | None, dest: Path | None) -> None:
     """Write or update default source/destination in the user config file."""
     if source is None and dest is None:
-        msg = "Specify at least one of --source or --dest."
+        msg = "`spb configure` requires at least one of `--source` or `--dest`."
         raise click.UsageError(msg)
 
     try:

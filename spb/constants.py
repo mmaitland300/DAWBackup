@@ -13,6 +13,7 @@ CONFIG_FILENAME = "config.toml"
 SPB_CONFIG_DIR_ENV = "SPB_CONFIG_DIR"
 CURRENT_SCHEMA_VERSION = 1
 _APPDIRS_APP_NAME = "spb"
+DEFAULT_WATCH_DEBOUNCE_SECONDS = 1.5
 
 
 def default_user_config_dir() -> Path:

@@ -4,11 +4,12 @@
 [![Coverage](https://img.shields.io/badge/Coverage-Tracked%20in%20CI-informational)](https://github.com/mmaitland300/DAWBackup/actions/workflows/ci.yml) [![Linter: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. Live filesystem watching is planned for a later milestone.
+A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. **`spb watch`** runs incremental backups when the configured source tree changes, with debouncing for bursty editors (for example DAW saves).
 
 ## Current Features
 
 * **Manual backup CLI:** `spb backup <source> <dest>` or `spb backup` after configuring defaults.
+* **Watch mode:** `spb watch` uses the same config defaults as zero-argument `spb backup`, watches the source tree with [watchdog](https://github.com/gorakhargosh/watchdog), and runs `run_backup` after a quiet period (default 1.5s; override with `--debounce SECONDS`).
 * **User config:** `spb configure` and `spb status`; defaults live in a TOML file under the user config directory (or `SPB_CONFIG_DIR` if set).
 * **Content Hashing:** Uses SHA-256 hashing to detect actual content changes, ignoring metadata.
 * **Incremental Backups:** Only copies new or modified files into the mirrored destination tree.
@@ -44,7 +45,21 @@ Or, after setting defaults (see **Configuration**):
 spb backup
 ```
 
-`spb backup` accepts **either zero arguments** (use configured `default_source` and `default_dest`) **or exactly two** paths. One argument is always an error.
+Continuous sync after configuration (same defaults as `spb backup` with no args):
+
+```bash
+spb watch
+```
+
+Optional debounce interval (seconds of filesystem quiet before running a backup):
+
+```bash
+spb watch --debounce 2
+```
+
+Press Ctrl+C to stop watching; the process exits cleanly (pending debounced runs are cancelled; already running backups are allowed to finish).
+
+`spb backup` accepts **either zero arguments** (use configured `default_source` and `default_dest`) **or exactly two** paths. One argument is always an error. **`spb watch` does not take path arguments**; it always uses the configured defaults, like zero-argument `spb backup`.
 
 Example with explicit paths:
 
@@ -63,6 +78,7 @@ Operational rules:
 * Symlinks and other non-ordinary filesystem entries are skipped with warnings.
 * The top-level destination metadata directory `dest/.spb/` is reserved for SPB internals.
 * The top-level **source** tree's `.spb` directory is skipped so it does not collide with mirror metadata.
+* **Watch mode** ignores events under that reserved source `.spb` directory, consistent with backup. The observer follows the platform's filesystem notification rules; symlink and non-regular file handling for *copies* remains the same as manual backup (skipped with warnings). Platform limits of `watchdog` (buffer sizes, quirks on network paths, etc.) apply; see upstream docs.
 * Files restored after a source deletion are treated as live again on the next run.
 * Every regular file is hashed on every run for correctness-first behavior.
 
@@ -89,9 +105,9 @@ Unknown keys in `config.toml` are **ignored** when reading.
 
 ## Roadmap
 
-* Filesystem watching via `watchdog`
 * Performance optimizations for large project trees
 * Richer packaging and release automation
+* Possible follow-ons: multiple watch roots, path arguments for watch, service/daemon packaging
 
 ## Contributing
 

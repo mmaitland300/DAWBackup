@@ -70,6 +70,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"] # Allow unused imports in __init__.py
+"spb/services/watcher.py" = [
+    "PLR0913", # Watch orchestration takes explicit dependencies (no drive-by dataclass)
+]
 "tests/*" = [
     "S101",   # Allow assert statements in tests
     "D101",   # Missing docstring in public class (allow in tests)
@@ -94,6 +97,11 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true # Be strict later, but allow missing stubs for now
 strict = true # Enforce strict mode as required
+
+[[tool.mypy.overrides]]
+module = "spb.services.watcher"
+# watchdog ships without inline types; calls are runtime-correct.
+disable_error_code = ["no-untyped-call"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

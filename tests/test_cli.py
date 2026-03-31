@@ -176,3 +176,22 @@ class CliTests(unittest.TestCase):
                     del os.environ[SPB_CONFIG_DIR_ENV]
                 else:
                     os.environ[SPB_CONFIG_DIR_ENV] = previous
+
+    def test_watch_rejects_non_positive_debounce(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(cli, ["watch", "--debounce", "0"])
+        self.assertNotEqual(result.exit_code, 0)
+
+    def test_watch_requires_config_like_zero_arg_backup(self) -> None:
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as tmp:
+            previous = os.environ.get(SPB_CONFIG_DIR_ENV)
+            os.environ[SPB_CONFIG_DIR_ENV] = tmp
+            try:
+                result = runner.invoke(cli, ["watch"])
+                self.assertNotEqual(result.exit_code, 0)
+            finally:
+                if previous is None:
+                    del os.environ[SPB_CONFIG_DIR_ENV]
+                else:
+                    os.environ[SPB_CONFIG_DIR_ENV] = previous

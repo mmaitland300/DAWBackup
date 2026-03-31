@@ -14,13 +14,18 @@ from spb.config import (
     persist_config_updates,
     read_config,
 )
-from spb.constants import config_file_path, resolve_config_dir
+from spb.constants import (
+    DEFAULT_WATCH_DEBOUNCE_SECONDS,
+    config_file_path,
+    resolve_config_dir,
+)
 from spb.core.backup import BackupResult, run_backup
+from spb.services.watcher import run_watch
 
 _BACKUP_CLI_ARG_PAIR = 2
 
 
-def _emit_backup_result(result: BackupResult) -> None:
+def _print_backup_result(result: BackupResult) -> None:
     for warning in result.warnings:
         click.echo(f"Warning: {warning}", err=True)
     for error in result.errors:
@@ -28,8 +33,28 @@ def _emit_backup_result(result: BackupResult) -> None:
 
     click.echo(result.summary.to_output_line())
 
+
+def _emit_backup_result(result: BackupResult) -> None:
+    _print_backup_result(result)
     if result.errors:
         raise click.exceptions.Exit(1)
+
+
+def _resolve_paths_for_zero_arg_backup() -> tuple[Path, Path]:
+    """Return configured source and destination (same rules as ``spb backup``)."""
+    outcome = read_config()
+    if isinstance(outcome, ConfigFileMissing):
+        msg = (
+            "No config file found. Set defaults with "
+            "`spb configure --source DIR --dest DIR` or pass paths explicitly."
+        )
+        raise click.ClickException(msg)
+    if isinstance(outcome, ConfigFileInvalid):
+        raise click.ClickException(outcome.reason)
+    try:
+        return paths_for_backup(outcome.config)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 @click.group()
@@ -62,19 +87,7 @@ def backup_command(paths: tuple[Path, ...]) -> None:
             msg = f"Source must be an existing directory: {source}"
             raise click.ClickException(msg)
     else:
-        outcome = read_config()
-        if isinstance(outcome, ConfigFileMissing):
-            msg = (
-                "No config file found. Set defaults with "
-                "`spb configure --source DIR --dest DIR` or pass paths explicitly."
-            )
-            raise click.ClickException(msg)
-        if isinstance(outcome, ConfigFileInvalid):
-            raise click.ClickException(outcome.reason)
-        try:
-            source, destination = paths_for_backup(outcome.config)
-        except ValueError as exc:
-            raise click.ClickException(str(exc)) from exc
+        source, destination = _resolve_paths_for_zero_arg_backup()
 
     try:
         result = run_backup(source=source, destination=destination)
@@ -82,6 +95,37 @@ def backup_command(paths: tuple[Path, ...]) -> None:
         raise click.ClickException(str(exc)) from exc
 
     _emit_backup_result(result)
+
+
+@cli.command("watch")
+@click.option(
+    "--debounce",
+    type=float,
+    default=DEFAULT_WATCH_DEBOUNCE_SECONDS,
+    show_default=True,
+    help="Seconds of quiet after filesystem activity before running a backup.",
+)
+def watch_command(debounce: float) -> None:
+    """Watch the configured source tree and run debounced incremental backups."""
+    if debounce <= 0:
+        msg = "--debounce must be greater than zero."
+        raise click.UsageError(msg)
+
+    source, destination = _resolve_paths_for_zero_arg_backup()
+
+    def on_backup_completed(result: BackupResult) -> None:
+        _print_backup_result(result)
+
+    try:
+        run_watch(
+            source=source,
+            destination=destination,
+            debounce_seconds=debounce,
+            on_backup_result=on_backup_completed,
+            on_info=click.echo,
+        )
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 @cli.command("configure")

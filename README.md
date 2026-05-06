@@ -6,7 +6,9 @@
 
 A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. **`spb watch`** runs incremental backups when the configured source tree changes, with debouncing for bursty editors (for example DAW saves).
 
-**Milestone 3 is complete** (backup, config, watch). Release notes: [CHANGELOG.md](CHANGELOG.md).
+**Milestone 3 is complete** (backup, config, watch). Changelog: [CHANGELOG.md](CHANGELOG.md).
+
+Current status: source-installable milestone build. GitHub release artifacts are not published yet; install from source with Poetry or pip as shown below.
 
 ## Current Features
 
@@ -130,7 +132,7 @@ Longer term:
 
 ## Contributing
 
-Release history: [CHANGELOG.md](CHANGELOG.md).
+Changelog: [CHANGELOG.md](CHANGELOG.md).
 
 ```bash
 poetry install

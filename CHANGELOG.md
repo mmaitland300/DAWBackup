@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Smart Project Backup (SPB) are documented in this file.
+All notable source milestones and notable changes to Smart Project Backup (SPB) are documented in this file. GitHub release artifacts are not published yet.
 
 ## [0.2.0] - 2026-03-30
 

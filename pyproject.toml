@@ -105,7 +105,7 @@ disable_error_code = ["no-untyped-call"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --cov=spb --cov-report=term-missing --cov-fail-under=1" # Start with 1% coverage requirement, will increase
+addopts = "-ra -q --cov=spb --cov-report=term-missing --cov-fail-under=75"
 testpaths = [
     "tests",
 ]
@@ -122,5 +122,5 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 1 # Start low, increase per phase requirement (target >= 90)
+fail_under = 75
 show_missing = true

@@ -1,0 +1,40 @@
+name: Feature proposal
+description: Suggest a scoped SPB improvement.
+title: "Feature: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        SPB changes are easiest to review when the problem, safety impact, and test path are clear.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the CLI/config/manifest behavior you want.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Backup safety considerations
+      description: Could this affect copying, deletion tracking, restore expectations, watch mode, or existing manifests?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include simpler docs-only or CLI-only options if relevant.
+  - type: textarea
+    id: tests
+    attributes:
+      label: Suggested tests or validation
+      description: What should be tested before this ships?

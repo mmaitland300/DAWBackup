@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a reproducible SPB problem.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please anonymize private folder names if needed, but keep the command shape and error text intact.
+  - type: input
+    id: version
+    attributes:
+      label: SPB version or commit
+      description: "Example: 0.2.0, main branch commit hash, or local branch name."
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "Python 3.11.x"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or workflow
+      description: Include the exact `spb` command, or describe watch/config steps.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and output
+      description: Include stdout/stderr, warnings, errors, or traceback text.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: filesystem
+    attributes:
+      label: Filesystem context
+      description: Describe source/destination type, symlinks, network drives, permissions, or unusual entries. Do not include private file contents.
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks already tried
+      description: Mention reruns, clean temp directories, config reset, or tests if applicable.

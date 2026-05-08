@@ -122,7 +122,7 @@ Unknown keys in `config.toml` are **ignored** when reading.
 
 ## Roadmap
 
-Next focus is **Milestone 4 (operational hardening)**, for example exclude patterns, clearer last-run status, optional initial sync on `spb watch` start, observer error handling, and stricter tests/coverage.
+Next focus is **Milestone 4 (operational hardening)**, for example exclude patterns, clearer last-run status, optional initial sync on `spb watch` start, observer error handling, and stricter tests/coverage. See [ROADMAP.md](ROADMAP.md) for the current public roadmap.
 
 Longer term:
 
@@ -131,6 +131,8 @@ Longer term:
 * Multiple watch roots, path arguments for `spb watch`, service/daemon packaging
 
 ## Contributing
+
+Bug reports, docs fixes, platform testing, and small CLI/test improvements are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 Changelog: [CHANGELOG.md](CHANGELOG.md).
 

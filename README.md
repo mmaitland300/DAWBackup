@@ -99,6 +99,12 @@ Operational rules:
 * Files restored after a source deletion are treated as live again on the next run.
 * Every regular file is hashed on every run for correctness-first behavior.
 
+## Restore Safety
+
+SPB does not perform automatic destructive restores. Source deletions are recorded in the manifest, but prior backup copies are left in the destination mirror so recovery remains a deliberate manual action.
+
+Before copying backup files back into an active DAW/project folder, restore into a temporary location first and confirm the session opens as expected. For important projects, keep the original source folder untouched until the restored copy has been verified.
+
 ## Configuration
 
 Defaults are stored in **`config.toml`** with `schema_version = 1`.

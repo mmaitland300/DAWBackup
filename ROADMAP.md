@@ -13,7 +13,7 @@ Smart Project Backup is a source-installable milestone build. The current public
 
 ## Packaging And Release Polish
 
-- Publish GitHub release artifacts once the source-installable milestone is ready.
+- Keep GitHub release notes aligned with source-installable milestones.
 - Document release verification steps.
 - Evaluate PyInstaller or similar packaging after CLI behavior stabilizes.
 

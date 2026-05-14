@@ -1,6 +1,6 @@
 # Changelog
 
-All notable source milestones and notable changes to Smart Project Backup (SPB) are documented in this file. GitHub release artifacts are not published yet.
+All notable source milestones and notable changes to Smart Project Backup (SPB) are documented in this file. `v0.2.0` is a source-installable release; standalone installer/binary artifacts are not published yet.
 
 ## [0.2.0] - 2026-03-30
 

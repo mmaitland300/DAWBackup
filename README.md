@@ -8,11 +8,21 @@ This repo is named DAWBackup; the tool and Python package are Smart Project Back
 
 A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. **`spb watch`** runs incremental backups when the configured source tree changes, with debouncing for bursty editors (for example DAW saves).
 
-**Milestone 3 is complete** (backup, config, watch). Changelog: [CHANGELOG.md](CHANGELOG.md).
+## Quick Review Path
 
-Current status: source-installable milestone build. GitHub release artifacts are not published yet; install from source with Poetry or pip as shown below.
+- Start with [Installation](#installation) and [Usage](#usage) to run the CLI from source.
+- Review [Restore Safety](#restore-safety) before copying backup files back into an active project.
+- Check [Configuration](#configuration) for zero-argument backup/watch behavior.
+- Read [ROADMAP.md](ROADMAP.md) for release packaging and operational-hardening work.
 
-## Current Features
+## Status Snapshot
+
+- Milestone 3 is complete: backup, config, and watch mode. Changelog: [CHANGELOG.md](CHANGELOG.md).
+- Current status: source-installable milestone build. GitHub release artifacts are not published yet.
+- Cross-platform baseline is validated by tests on Linux and Windows in CI.
+- Next focus is Milestone 4: exclude patterns, clearer last-run status, optional initial sync, observer diagnostics, and stricter edge-case tests.
+
+## What Works Now
 
 * **Manual backup CLI:** `spb backup <source> <dest>` or `spb backup` after configuring defaults.
 * **Watch mode:** `spb watch` uses the same config defaults as zero-argument `spb backup`, watches the source tree with [watchdog](https://github.com/gorakhargosh/watchdog), and runs `run_backup` after a quiet period (default 1.5s; override with `--debounce SECONDS`).
@@ -21,7 +31,6 @@ Current status: source-installable milestone build. GitHub release artifacts are
 * **Incremental Backups:** Only copies new or modified files into the mirrored destination tree.
 * **Manifest:** Maintains `dest/.spb/manifest.sqlite` with per-file and per-run state.
 * **Deletion Tracking:** Records source deletions in SQLite without deleting prior backup copies.
-* **Cross-Platform Baseline:** Validated by tests on Linux and Windows in CI.
 
 ## Installation
 
@@ -130,7 +139,7 @@ Unknown keys in `config.toml` are **ignored** when reading.
 
 ## Roadmap
 
-Next focus is **Milestone 4 (operational hardening)**, for example exclude patterns, clearer last-run status, optional initial sync on `spb watch` start, observer error handling, and stricter tests/coverage. See [ROADMAP.md](ROADMAP.md) for the current public roadmap.
+Next focus is **Milestone 4 (operational hardening)**. See [ROADMAP.md](ROADMAP.md) for the current public roadmap.
 
 Longer term:
 

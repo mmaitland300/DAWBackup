@@ -149,7 +149,7 @@ Longer term:
 
 ## Contributing
 
-Bug reports, docs fixes, platform testing, and small CLI/test improvements are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Bug reports, docs fixes, platform testing, and small CLI/test improvements are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. For data-loss, unsafe path handling, or security-sensitive reports, see [SECURITY.md](SECURITY.md).
 
 Changelog: [CHANGELOG.md](CHANGELOG.md).
 

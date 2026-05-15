@@ -18,7 +18,7 @@ A cross-platform Python backup tool that hashes project files, copies only new o
 ## Status Snapshot
 
 - Milestone 3 is complete: backup, config, and watch mode. Changelog: [CHANGELOG.md](CHANGELOG.md).
-- Current status: source-installable milestone build. `v0.2.0` is the current source release; standalone installer/binary artifacts are not published yet.
+- Current status: source-installable milestone build. [`v0.2.0`](https://github.com/mmaitland300/DAWBackup/releases/tag/v0.2.0) is the current GitHub source release; standalone installer/binary artifacts are not published yet.
 - Cross-platform baseline is validated by tests on Linux and Windows in CI.
 - Next focus is Milestone 4: exclude patterns, clearer last-run status, optional initial sync, observer diagnostics, and stricter edge-case tests.
 

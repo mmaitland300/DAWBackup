@@ -11,6 +11,7 @@ A cross-platform Python backup tool that hashes project files, copies only new o
 ## Quick Review Path
 
 - Start with [Installation](#installation) and [Usage](#usage) to run the CLI from source.
+- See [Workflow Walkthrough](docs/workflow-walkthrough.md) for a short backup/config/status run with expected output.
 - Review [Restore Safety](#restore-safety) before copying backup files back into an active project.
 - Check [Configuration](#configuration) for zero-argument backup/watch behavior.
 - Read [ROADMAP.md](ROADMAP.md) for standalone packaging and operational-hardening work.

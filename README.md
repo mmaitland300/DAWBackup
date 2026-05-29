@@ -8,20 +8,20 @@ This repo is named DAWBackup; the tool and Python package are Smart Project Back
 
 A cross-platform Python backup tool that hashes project files, copies only new or changed content, and tracks state in SQLite. You can pass source and destination on the command line or store defaults in a user config file. **`spb watch`** runs incremental backups when the configured source tree changes, with debouncing for bursty editors (for example DAW saves).
 
-## Quick Review Path
+## Start here
 
 - Start with [Installation](#installation) and [Usage](#usage) to run the CLI from source.
 - See [Workflow Walkthrough](docs/workflow-walkthrough.md) for a short backup/config/status run with expected output.
 - Review [Restore Safety](#restore-safety) before copying backup files back into an active project.
 - Check [Configuration](#configuration) for zero-argument backup/watch behavior.
-- Read [ROADMAP.md](ROADMAP.md) for standalone packaging and operational-hardening work.
+- Read [ROADMAP.md](ROADMAP.md) for standalone packaging and next cleanup work.
 
 ## Status Snapshot
 
 - Milestone 3 is complete: backup, config, and watch mode. Changelog: [CHANGELOG.md](CHANGELOG.md).
 - Current status: source-installable milestone build. [`v0.2.0`](https://github.com/mmaitland300/DAWBackup/releases/tag/v0.2.0) is the current GitHub source release; standalone installer/binary artifacts are not published yet.
 - Cross-platform baseline is validated by tests on Linux and Windows in CI.
-- Next focus is Milestone 4: exclude patterns, clearer last-run status, optional initial sync, observer diagnostics, and stricter edge-case tests.
+- Next focus is Milestone 4 cleanup: exclude patterns, clearer last-run status, optional initial sync, observer diagnostics, and stricter edge-case tests.
 
 ## What Works Now
 
@@ -140,7 +140,7 @@ Unknown keys in `config.toml` are **ignored** when reading.
 
 ## Roadmap
 
-Next focus is **Milestone 4 (operational hardening)**. See [ROADMAP.md](ROADMAP.md) for the current public roadmap.
+Next focus is **Milestone 4 cleanup**: exclude patterns, clearer last-run status, optional initial sync, observer diagnostics, and stricter edge-case tests. See [ROADMAP.md](ROADMAP.md) for the current public roadmap.
 
 Longer term:
 
